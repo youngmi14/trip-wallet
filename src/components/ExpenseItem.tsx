@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import type { Expense, CurrencyCode, Category } from '@/types'
@@ -19,7 +20,12 @@ const CATEGORY_STYLE: Record<Category, string> = {
   '기타': 'bg-gray-100 text-gray-600 border-gray-200',
 }
 
-export function ExpenseItem({ expense, currency, onEdit, onDelete }: ExpenseItemProps) {
+export const ExpenseItem = memo(function ExpenseItem({
+  expense,
+  currency,
+  onEdit,
+  onDelete,
+}: ExpenseItemProps) {
   return (
     <div className="flex items-center gap-3 py-2.5 px-3 rounded-lg hover:bg-muted/50 group transition-colors">
       <span
@@ -58,4 +64,4 @@ export function ExpenseItem({ expense, currency, onEdit, onDelete }: ExpenseItem
       </div>
     </div>
   )
-}
+})

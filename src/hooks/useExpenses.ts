@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import type { Expense, CurrencyCode } from '@/types'
 
 const STORAGE_KEY = 'travel-money-expenses'
@@ -22,26 +22,26 @@ export function useExpenses() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(expenses))
   }, [expenses])
 
-  const setCurrency = (code: CurrencyCode) => {
+  const setCurrency = useCallback((code: CurrencyCode) => {
     setCurrencyState(code)
     localStorage.setItem(CURRENCY_KEY, code)
-  }
+  }, [])
 
-  const addExpense = (expense: Omit<Expense, 'id'>) => {
+  const addExpense = useCallback((expense: Omit<Expense, 'id'>) => {
     setExpenses(prev => [...prev, { ...expense, id: crypto.randomUUID() }])
-  }
+  }, [])
 
-  const updateExpense = (id: string, updates: Omit<Expense, 'id'>) => {
+  const updateExpense = useCallback((id: string, updates: Omit<Expense, 'id'>) => {
     setExpenses(prev => prev.map(e => (e.id === id ? { ...updates, id } : e)))
-  }
+  }, [])
 
-  const deleteExpense = (id: string) => {
+  const deleteExpense = useCallback((id: string) => {
     setExpenses(prev => prev.filter(e => e.id !== id))
-  }
+  }, [])
 
-  const resetExpenses = () => {
+  const resetExpenses = useCallback(() => {
     setExpenses([])
-  }
+  }, [])
 
   return { expenses, currency, setCurrency, addExpense, updateExpense, deleteExpense, resetExpenses }
 }

@@ -1,4 +1,4 @@
-import { useMemo } from 'react'
+import { useMemo, useCallback } from 'react'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { Expense, CurrencyCode, Category } from '@/types'
@@ -36,21 +36,28 @@ function CustomTooltip({ active, payload, total, currency }: CustomTooltipProps)
 }
 
 export function SummaryPanel({ expenses, currency }: SummaryPanelProps) {
-  const { total, byCategory } = useMemo(() => {
+  const { total, byCategory, chartData, activeCategories } = useMemo(() => {
     const byCategory: Partial<Record<Category, number>> = {}
     let total = 0
     for (const e of expenses) {
       byCategory[e.category] = (byCategory[e.category] ?? 0) + e.amount
       total += e.amount
     }
-    return { total, byCategory }
+    const activeCategories = CATEGORIES.filter(cat => (byCategory[cat] ?? 0) > 0)
+    const chartData = activeCategories.map(cat => ({
+      name: cat,
+      value: byCategory[cat]!,
+      color: CATEGORY_COLORS[cat],
+    }))
+    return { total, byCategory, chartData, activeCategories }
   }, [expenses])
 
-  const chartData = CATEGORIES
-    .filter(cat => (byCategory[cat] ?? 0) > 0)
-    .map(cat => ({ name: cat, value: byCategory[cat]!, color: CATEGORY_COLORS[cat] }))
-
-  const activeCategories = CATEGORIES.filter(cat => (byCategory[cat] ?? 0) > 0)
+  const renderTooltip = useCallback(
+    ({ active, payload }: { active?: boolean; payload?: TooltipPayload[] }) => (
+      <CustomTooltip active={active} payload={payload} total={total} currency={currency} />
+    ),
+    [total, currency],
+  )
 
   return (
     <div className="space-y-4">
@@ -97,9 +104,7 @@ export function SummaryPanel({ expenses, currency }: SummaryPanelProps) {
                       <Cell key={i} fill={entry.color} />
                     ))}
                   </Pie>
-                  <Tooltip
-                    content={<CustomTooltip total={total} currency={currency} />}
-                  />
+                  <Tooltip content={renderTooltip} />
                 </PieChart>
               </ResponsiveContainer>
 

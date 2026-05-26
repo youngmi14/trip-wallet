@@ -44,12 +44,20 @@ export const CATEGORY_COLORS: Record<Category, string> = {
   '기타': '#6b7280',
 }
 
+// Intl.NumberFormat 인스턴스를 통화별로 캐싱 — 매 호출마다 생성하면 비용이 높음
+const formatters = new Map<CurrencyCode, Intl.NumberFormat>()
+
 export function formatAmount(amount: number, currencyCode: CurrencyCode): string {
-  const currency = CURRENCIES.find(c => c.code === currencyCode)!
-  return new Intl.NumberFormat(currency.locale, {
-    style: 'currency',
-    currency: currencyCode,
-    minimumFractionDigits: currency.decimals,
-    maximumFractionDigits: currency.decimals,
-  }).format(amount)
+  let formatter = formatters.get(currencyCode)
+  if (!formatter) {
+    const currency = CURRENCIES.find(c => c.code === currencyCode)!
+    formatter = new Intl.NumberFormat(currency.locale, {
+      style: 'currency',
+      currency: currencyCode,
+      minimumFractionDigits: currency.decimals,
+      maximumFractionDigits: currency.decimals,
+    })
+    formatters.set(currencyCode, formatter)
+  }
+  return formatter.format(amount)
 }
