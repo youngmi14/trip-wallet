@@ -1,5 +1,6 @@
 import { useMemo, useCallback } from 'react'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
+import type { TooltipProps } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import type { Expense, CurrencyCode, Category } from '@/types'
 import { CATEGORIES, CATEGORY_COLORS, formatAmount } from '@/types'
@@ -7,32 +8,6 @@ import { CATEGORIES, CATEGORY_COLORS, formatAmount } from '@/types'
 interface SummaryPanelProps {
   expenses: Expense[]
   currency: CurrencyCode
-}
-
-interface TooltipPayload {
-  name: string
-  value: number
-}
-
-interface CustomTooltipProps {
-  active?: boolean
-  payload?: TooltipPayload[]
-  total: number
-  currency: CurrencyCode
-}
-
-function CustomTooltip({ active, payload, total, currency }: CustomTooltipProps) {
-  if (!active || !payload?.length) return null
-  const { name, value } = payload[0]
-  return (
-    <div className="bg-background border rounded-lg px-3 py-2 shadow-md text-xs space-y-0.5">
-      <p className="font-semibold">{name}</p>
-      <p>{formatAmount(value, currency)}</p>
-      <p className="text-muted-foreground">
-        {total > 0 ? Math.round((value / total) * 100) : 0}%
-      </p>
-    </div>
-  )
 }
 
 export function SummaryPanel({ expenses, currency }: SummaryPanelProps) {
@@ -53,9 +28,20 @@ export function SummaryPanel({ expenses, currency }: SummaryPanelProps) {
   }, [expenses])
 
   const renderTooltip = useCallback(
-    ({ active, payload }: { active?: boolean; payload?: TooltipPayload[] }) => (
-      <CustomTooltip active={active} payload={payload} total={total} currency={currency} />
-    ),
+    ({ active, payload }: TooltipProps<number, string>) => {
+      if (!active || !payload?.length) return null
+      const { name, value } = payload[0]
+      if (value === undefined) return null
+      return (
+        <div className="bg-background border rounded-lg px-3 py-2 shadow-md text-xs space-y-0.5">
+          <p className="font-semibold">{name}</p>
+          <p>{formatAmount(value, currency)}</p>
+          <p className="text-muted-foreground">
+            {total > 0 ? Math.round((value / total) * 100) : 0}%
+          </p>
+        </div>
+      )
+    },
     [total, currency],
   )
 
