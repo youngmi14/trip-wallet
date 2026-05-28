@@ -23,6 +23,9 @@
     "@radix-ui/react-separator": "^1.1.7",
     "@radix-ui/react-alert-dialog": "^1.1.14"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
+  },
   "devDependencies": {
     "@types/node": "^22.15.21",
     "@types/react": "^18.3.18",
