@@ -126,3 +126,5 @@ export function SummaryPanel({ expenses, currency }: SummaryPanelProps) {
     </div>
   )
 }
+
+export default SummaryPanel

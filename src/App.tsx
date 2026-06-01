@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, lazy, Suspense } from 'react'
 import { Wallet, RotateCcw } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -11,8 +11,18 @@ import {
 } from '@/components/ui/alert-dialog'
 import { ExpenseList } from '@/components/ExpenseList'
 import { ExpenseForm } from '@/components/ExpenseForm'
-import { SummaryPanel } from '@/components/SummaryPanel'
 import { useExpenses } from '@/hooks/useExpenses'
+
+const SummaryPanel = lazy(() => import('@/components/SummaryPanel'))
+
+function SummaryPanelSkeleton() {
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl border bg-card h-32 animate-pulse" />
+      <div className="rounded-xl border bg-card h-72 animate-pulse" />
+    </div>
+  )
+}
 import { CURRENCIES } from '@/types'
 import type { Expense, CurrencyCode } from '@/types'
 
@@ -137,7 +147,9 @@ export default function App() {
 
             {/* Right: summary */}
             <div className="overflow-y-auto">
-              <SummaryPanel expenses={expenses} currency={currency} />
+              <Suspense fallback={<SummaryPanelSkeleton />}>
+                <SummaryPanel expenses={expenses} currency={currency} />
+              </Suspense>
             </div>
           </div>
         </div>
