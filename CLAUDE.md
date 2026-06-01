@@ -117,3 +117,18 @@ git push        # Vercel 자동 재배포 트리거
 | list의 key에 index 사용 | 순서 변경 시 리렌더 버그 유발 |
 | 사과 표현 사용 | 불필요한 감정 표현 |
 | 변경 내용 요약 작성 | diff로 확인 가능 |
+
+---
+
+## 향후 작업 시 주의사항
+
+| 작업 | 함께 수정해야 할 것 |
+|------|-------------------|
+| 외부 API 추가 (환율, 날씨 등) | `vercel.json`의 `connect-src`에 해당 도메인 추가 |
+
+**이유:** CSP `connect-src 'self'`로 설정되어 있어 외부 도메인으로의 fetch/XHR 요청이 차단됨.
+
+예) 환율 API 추가 시:
+```json
+"connect-src 'self' https://api.exchangerate-api.com"
+```
