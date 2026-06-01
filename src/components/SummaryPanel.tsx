@@ -1,16 +1,20 @@
-import { useMemo, useCallback } from 'react'
+import { useMemo, useCallback, useState, useEffect } from 'react'
 import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from 'recharts'
 import type { TooltipProps } from 'recharts'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import type { Expense, CurrencyCode, Category } from '@/types'
 import { CATEGORIES, CATEGORY_COLORS, formatAmount } from '@/types'
 
 interface SummaryPanelProps {
   expenses: Expense[]
   currency: CurrencyCode
+  exchangeRate: number | null
+  onExchangeRateChange: (rate: number | null) => void
 }
 
-export function SummaryPanel({ expenses, currency }: SummaryPanelProps) {
+export default function SummaryPanel({ expenses, currency, exchangeRate, onExchangeRateChange }: SummaryPanelProps) {
   const { total, byCategory, chartData, activeCategories } = useMemo(() => {
     const byCategory: Partial<Record<Category, number>> = {}
     let total = 0
@@ -45,6 +49,50 @@ export function SummaryPanel({ expenses, currency }: SummaryPanelProps) {
     [total, currency],
   )
 
+  const [rateInput, setRateInput] = useState(() =>
+    exchangeRate != null ? String(exchangeRate) : ''
+  )
+  const [fetching, setFetching] = useState(false)
+  const [fetchError, setFetchError] = useState(false)
+
+  useEffect(() => {
+    setRateInput(exchangeRate != null ? String(exchangeRate) : '')
+    setFetchError(false)
+  }, [currency])
+
+  const handleRateInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const raw = e.target.value
+    setRateInput(raw)
+    const val = parseFloat(raw)
+    if (!isNaN(val) && val > 0) onExchangeRateChange(val)
+    else if (raw === '') onExchangeRateChange(null)
+  }
+
+  const fetchCurrentRate = useCallback(async () => {
+    setFetching(true)
+    setFetchError(false)
+    try {
+      const res = await fetch(
+        'https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/krw.json'
+      )
+      if (!res.ok) throw new Error()
+      const data = await res.json() as { krw: Record<string, number> }
+      const krwToForeign = data.krw[currency.toLowerCase()]
+      if (!krwToForeign) throw new Error()
+      const krwPerUnit = Math.round((1 / krwToForeign) * 100) / 100
+      onExchangeRateChange(krwPerUnit)
+      setRateInput(String(krwPerUnit))
+    } catch {
+      setFetchError(true)
+    } finally {
+      setFetching(false)
+    }
+  }, [currency, onExchangeRateChange])
+
+  const rateDisplayLabel = exchangeRate != null
+    ? `1 ${currency} = ${Number.isInteger(exchangeRate) ? exchangeRate.toLocaleString('ko-KR') : exchangeRate.toFixed(2)}원`
+    : null
+
   return (
     <div className="space-y-4">
       <Card>
@@ -57,6 +105,11 @@ export function SummaryPanel({ expenses, currency }: SummaryPanelProps) {
           <p className="text-3xl font-bold tabular-nums tracking-tight">
             {formatAmount(total, currency)}
           </p>
+          {currency !== 'KRW' && exchangeRate != null && total > 0 && (
+            <p className="text-sm text-muted-foreground mt-1 tabular-nums">
+              ≈ {formatAmount(total * exchangeRate, 'KRW')}
+            </p>
+          )}
           <p className="text-xs text-muted-foreground mt-1.5">
             {expenses.length > 0
               ? `총 ${expenses.length}건의 지출`
@@ -64,6 +117,49 @@ export function SummaryPanel({ expenses, currency }: SummaryPanelProps) {
           </p>
         </CardContent>
       </Card>
+
+      {currency !== 'KRW' && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xs text-muted-foreground font-medium tracking-wide uppercase">
+              원화 환산
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {rateDisplayLabel && (
+              <p className="text-xs text-muted-foreground">{rateDisplayLabel}</p>
+            )}
+            <div className="space-y-1.5">
+              <p className="text-xs text-muted-foreground">1 {currency} = ? 원</p>
+              <div className="flex gap-2">
+                <Input
+                  type="number"
+                  min="0"
+                  step="any"
+                  placeholder="환율 직접 입력"
+                  value={rateInput}
+                  onChange={handleRateInputChange}
+                  className="flex-1 h-8 text-sm"
+                />
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={fetchCurrentRate}
+                  disabled={fetching}
+                  className="shrink-0 h-8 text-xs whitespace-nowrap"
+                >
+                  {fetching ? '불러오는 중…' : '현재 환율'}
+                </Button>
+              </div>
+              {fetchError && (
+                <p className="text-xs text-destructive">
+                  환율을 불러오지 못했어요. 직접 입력해 주세요.
+                </p>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader className="pb-2">
@@ -126,5 +222,3 @@ export function SummaryPanel({ expenses, currency }: SummaryPanelProps) {
     </div>
   )
 }
-
-export default SummaryPanel

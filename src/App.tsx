@@ -29,6 +29,7 @@ import type { Expense, CurrencyCode } from '@/types'
 export default function App() {
   const {
     expenses, currency, setCurrency,
+    exchangeRate, setExchangeRate,
     addExpense, updateExpense, deleteExpense, resetExpenses,
   } = useExpenses()
 
@@ -148,7 +149,12 @@ export default function App() {
             {/* Right: summary */}
             <div className="md:overflow-y-auto">
               <Suspense fallback={<SummaryPanelSkeleton />}>
-                <SummaryPanel expenses={expenses} currency={currency} />
+                <SummaryPanel
+                  expenses={expenses}
+                  currency={currency}
+                  exchangeRate={exchangeRate}
+                  onExchangeRateChange={setExchangeRate}
+                />
               </Suspense>
             </div>
           </div>
