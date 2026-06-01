@@ -64,7 +64,7 @@ export default function App() {
 
           <div className="flex items-center gap-2">
             <Select value={currency} onValueChange={v => setCurrency(v as CurrencyCode)}>
-              <SelectTrigger className="w-48 h-8 text-xs">
+              <SelectTrigger className="w-48 h-8 text-xs" aria-label="통화 선택">
                 <SelectValue>
                   <span className="font-semibold">{selectedCurrency?.symbol}</span>
                   {' '}
