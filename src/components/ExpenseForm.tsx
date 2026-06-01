@@ -72,7 +72,7 @@ export function ExpenseForm({ open, onClose, onSubmit, initialData }: ExpenseFor
           <DialogTitle>{initialData ? '지출 수정' : '지출 추가'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-1">
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1.5">
               <Label htmlFor="date">날짜</Label>
               <Input

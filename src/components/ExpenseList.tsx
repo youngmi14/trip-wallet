@@ -34,10 +34,10 @@ export function ExpenseList({ expenses, currency, onAdd, onEdit, onDelete }: Exp
   }, [expenses])
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto min-h-0 pr-1">
+    <div className="flex flex-col md:h-full">
+      <div className="md:flex-1 md:overflow-y-auto md:min-h-0 pr-1">
         {grouped.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full gap-3 text-muted-foreground py-16">
+          <div className="flex flex-col items-center justify-center md:h-full gap-3 text-muted-foreground py-16">
             <Receipt className="h-10 w-10 opacity-30" />
             <div className="text-center">
               <p className="text-sm font-medium">지출 내역이 없습니다</p>
