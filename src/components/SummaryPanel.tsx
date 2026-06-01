@@ -130,7 +130,6 @@ export default function SummaryPanel({ expenses, currency, exchangeRate, onExcha
               <p className="text-xs text-muted-foreground">{rateDisplayLabel}</p>
             )}
             <div className="space-y-1.5">
-              <p className="text-xs text-muted-foreground">1 {currency} = ? 원</p>
               <div className="flex gap-2">
                 <Input
                   type="number"
